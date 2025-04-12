@@ -12,19 +12,22 @@ bash scripts/download.sh "https://bioinformatics.cnio.es/data/courses/decont/con
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 
 # Merge the samples into a single file
-for sid in $( ls data/*.fastq.gz | cut -d "-" -f1 | cut -d "/" -f2 | sort | uniq); do 
+
+for sid in $(ls data/*.fastq.gz | cut -d "-" -f1 | cut -d "/" -f2 | sort | uniq); do 
     bash scripts/merge_fastqs.sh data out/merged $sid
 done
 
 # Run cutadapt for all merged files to remove the adapters
-    echo "Running cutadapt..."
-    mkdir -p log/cutadapt
-    mkdir -p out/trimmed
-for file in out/merged/*.fastq.gz
-do sample=$(basename "$file" .fastq.gz) #obtain the sample ID from the filename
-   cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG --discard-untrimmed \
-       -o out/trimmed/${sample}.trimmed.fastq.gz "$file" \ 
-      > log/cutadapt/${sample}.log #run cutadapt for each merged file and save the log
+echo "Running cutadapt..."
+mkdir -p log/cutadapt
+mkdir -p out/trimmed
+
+for file in out/merged/*.fastq.gz; do
+    sample=$(basename "$file" .fastq.gz) #obtain the sample ID from the filename
+    echo "Processing file: $file"
+    cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG --discard-untrimmed \
+    -o out/trimmed/${sample}.trimmed.fastq.gz "$file"\
+    > log/cutadapt/${sample}.log #run cutadapt for each merged file and save the log
 done 
 
 # Run STAR for all trimmed files
