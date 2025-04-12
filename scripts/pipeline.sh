@@ -4,16 +4,15 @@ do
     bash scripts/download.sh $url data
 done
 
-# Download the contaminants fasta file, uncompress it, and
-# filter to remove all small nuclear RNAs
+#Download the contaminants fasta file, uncompress it, and 
+#filter to remove all small nuclear RNAs
 bash scripts/download.sh "https://bioinformatics.cnio.es/data/courses/decont/contaminants.fasta.gz" res yes "small nuclear"
 
 # Index the contaminants file
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 
 # Merge the samples into a single file
-for sid in $( ls data/*.fastq.gz | cut -d "-" -f1 | cut -d "/" -f2 | sort | uniq)
-do
+for sid in $( ls data/*.fastq.gz | cut -d "-" -f1 | cut -d "/" -f2 | sort | uniq); do 
     bash scripts/merge_fastqs.sh data out/merged $sid
 done
 
@@ -23,21 +22,21 @@ done
     mkdir -p out/trimmed
 for file in out/merged/*.fastq.gz
 do sample=$(basename "$file" .fastq.gz) #obtain the sample ID from the filename
-    cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG --discard-untrimmed \
-        -o out/trimmed/${sample}.trimmed.fastq.gz "$file" \ 
-        > log/cutadapt/${sample}.log #run cutadapt for each merged file and save the log
+   cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG --discard-untrimmed \
+       -o out/trimmed/${sample}.trimmed.fastq.gz "$file" \ 
+      > log/cutadapt/${sample}.log #run cutadapt for each merged file and save the log
 done 
 
 # Run STAR for all trimmed files
 echo "Running STAR alignment..."
 for fname in out/trimmed/*.fastq.gz
 do 
-    # obtain the sample ID from the filename
+    obtain the sample ID from the filename
     sid=$(basename "$fname" .trimmed.fastq.gz)
-    # mkdir -p out/star/$sid
-    # STAR --runThreadN 4 --genomeDir res/contaminants_idx \
-    #    --outReadsUnmapped Fastx --readFilesIn <input_file> \
-    #    --readFilesCommand gunzip -c --outFileNamePrefix <output_directory>
+    mkdir -p out/star/$sid
+    STAR --runThreadN 4 --genomeDir res/contaminants_idx \
+    --outReadsUnmapped Fastx --readFilesIn out/trimmed/$fname\
+    --readFilesCommand gunzip -c --outFileNamePrefix out/star/$sid/ 
 done 
 
 # TODO: create a log file containing information from cutadapt and star logs

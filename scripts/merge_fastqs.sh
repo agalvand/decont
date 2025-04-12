@@ -10,6 +10,6 @@ sid="$3"
 
 mkdir -p "$outdir"
 
-cat "$data"/"$sid"_*.fastq.gz > "$outdir"/"$sid".fastq.gz
+cat "$data"/"$sid"-*.fastq.gz > "$outdir"/"$sid".fastq.gz
 
 echo "Merged $sid into $outdir/$sid.fastq.gz"
