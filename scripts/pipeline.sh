@@ -12,23 +12,28 @@ bash scripts/download.sh "https://bioinformatics.cnio.es/data/courses/decont/con
 bash scripts/index.sh res/contaminants.fasta res/contaminants_idx
 
 # Merge the samples into a single file
-for sid in $( ls data/*.fastq.gz | cut -d "_" -f1 | cut -d "/" -f2 | sort | uniq)
+for sid in $( ls data/*.fastq.gz | cut -d "-" -f1 | cut -d "/" -f2 | sort | uniq)
 do
     bash scripts/merge_fastqs.sh data out/merged $sid
 done
 
-# TODO: run cutadapt for all merged files
+# Run cutadapt for all merged files to remove the adapters
     echo "Running cutadapt..."
-    mkdir -p log/trimmed
+    mkdir -p log/cutadapt
     mkdir -p out/trimmed
-cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG --discard-untrimmed \
-     -o out/trimmed/*trimmed_fastq.gz data/merged/*fastq.gz log/trimmed
+for file in out/merged/*.fastq.gz
+do sample=$(basename "$file" .fastq.gz) #obtain the sample ID from the filename
+    cutadapt -m 18 -a TGGAATTCTCGGGTGCCAAGG --discard-untrimmed \
+        -o out/trimmed/${sample}.trimmed.fastq.gz "$file" \ 
+        > log/cutadapt/${sample}.log #run cutadapt for each merged file and save the log
+done 
 
-# TODO: run STAR for all trimmed files
+# Run STAR for all trimmed files
+echo "Running STAR alignment..."
 for fname in out/trimmed/*.fastq.gz
-do
-    # you will need to obtain the sample ID from the filename (basename??)
-    sid=#TODO
+do 
+    # obtain the sample ID from the filename
+    sid=$(basename "$fname" .trimmed.fastq.gz)
     # mkdir -p out/star/$sid
     # STAR --runThreadN 4 --genomeDir res/contaminants_idx \
     #    --outReadsUnmapped Fastx --readFilesIn <input_file> \
