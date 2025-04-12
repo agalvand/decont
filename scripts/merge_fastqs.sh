@@ -3,3 +3,13 @@
 # stored in the output directory specified by the second argument ($2).
 #
 # The directory containing the samples is indicated by the first argument ($1).
+
+data="$1"
+outdir="$2"
+sid="$3"
+
+mkdir -p "$outdir"
+
+cat "$data"/"$sid"_*.fastq.gz > "$outdir"/"$sid".fastq.gz
+
+echo "Merged $sid into $outdir/$sid.fastq.gz"
