@@ -1,0 +1,15 @@
+name: advshell
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+  - defaults
+dependencies:
+  - fastqc
+  - seqtk
+  - ca-certificates
+  - openssl
+  - cutadapt
+  - star
+  - multiqc
+prefix: /home/vant/miniforge3/envs/advshell
